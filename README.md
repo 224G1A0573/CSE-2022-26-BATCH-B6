@@ -17,7 +17,7 @@ This project proposes a **deep learning–based system** to automatically detect
 
 ## Technologies Used
 - **Programming Language:** Python  
-- **Deep Learning Framework:** TensorFlow / Keras  
+- **Deep Learning Framework:** TensorFlow, Keras  
 - **Models:** VGG16, ResNet50, InceptionV3  
 - **Libraries:** NumPy, Pandas, OpenCV, Matplotlib  
 - **Development Environment:** Jupyter Notebook  
