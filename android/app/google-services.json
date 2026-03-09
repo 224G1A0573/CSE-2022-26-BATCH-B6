@@ -1,0 +1,56 @@
+{
+  "project_info": {
+    "project_number": "209071816038",
+    "firebase_url": "https://bloombuddy-652e4-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "bloombuddy-652e4",
+    "storage_bucket": "bloombuddy-652e4.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:209071816038:android:8d419fe5c210975aeedca7",
+        "android_client_info": {
+          "package_name": "com.example.bloombuddy"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "209071816038-8aloovjm25i5vn45hsovmrtjliv7kf31.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.bloombuddy",
+            "certificate_hash": "713494119b55e2d1543f972c068a30be1c534f89"
+          }
+        },
+        {
+          "client_id": "209071816038-hcd46uaunpnfgtlq262b9pgjq0aclts8.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.bloombuddy",
+            "certificate_hash": "334bcfb7852a48523e567e4f24ff0e7f52c8410c"
+          }
+        },
+        {
+          "client_id": "209071816038-hqo5lstb48an2pjemhj66223jk81uft6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDKHFYfHbBmG6WGeO6lOxFL1Jcpn1UxPII"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "209071816038-hqo5lstb48an2pjemhj66223jk81uft6.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

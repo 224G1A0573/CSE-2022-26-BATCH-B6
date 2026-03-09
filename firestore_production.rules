@@ -1,0 +1,175 @@
+// 🔒 PRODUCTION FIRESTORE SECURITY RULES
+// Secure rules that allow all BloomBuddy features to work
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ============================================
+    // USER DOCUMENTS & SUBCOLLECTIONS
+    // ============================================
+    match /users/{userId} {
+      
+      // Allow users to read/write their own document
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      
+      // Allow any authenticated user to read user documents (needed for queries)
+      allow read: if request.auth != null;
+      
+      // ====== EMOTIONS SUBCOLLECTION ======
+      match /emotions/{emotionId} {
+        // User can read/write their own emotions
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+        
+        // Allow authenticated users to read (for emergency monitoring & parent/therapist access)
+        allow read: if request.auth != null;
+      }
+      
+      // ====== EYE TRACKING SUBCOLLECTION ======
+      match /eyeTracking/{trackingId} {
+        // User can read/write their own eye tracking data
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+        
+        // Allow authenticated users to read (for parent/therapist access)
+        allow read: if request.auth != null;
+      }
+      
+      // ====== NOTIFICATIONS SUBCOLLECTION ======
+      match /notifications/{notificationId} {
+        // User can read/write their own notifications
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+        
+        // Allow any authenticated user to create notifications
+        // (needed for therapist assignments, session notes, emergency alerts)
+        allow create: if request.auth != null;
+      }
+      
+      // ====== CHILD INFO SUBCOLLECTION ======
+      match /childInfo/{infoId} {
+        // User can read/write their own child info
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+        
+        // Allow therapists to read if assigned
+        allow read: if request.auth != null 
+          && exists(/databases/$(database)/documents/users/$(userId))
+          && get(/databases/$(database)/documents/users/$(userId)).data.therapistId == request.auth.uid;
+      }
+    }
+
+    // ============================================
+    // USER UPDATE PERMISSIONS (OUTSIDE SUBCOLLECTIONS)
+    // ============================================
+    match /users/{userId} {
+      
+      // Allow therapists to assign themselves to children
+      allow update: if request.auth != null
+        && get(/databases/$(database)/documents/users/$(userId)).data.role == 'kid'
+        && (
+          // Therapist assigning themselves
+          request.resource.data.therapistId == request.auth.uid
+          ||
+          // Therapist removing themselves
+          (get(/databases/$(database)/documents/users/$(userId)).data.therapistId == request.auth.uid 
+           && !('therapistId' in request.resource.data))
+        );
+      
+      // Allow parents to update child documents they're linked to
+      allow update: if request.auth != null
+        && get(/databases/$(database)/documents/users/$(userId)).data.role == 'kid'
+        && (get(/databases/$(database)/documents/users/$(userId)).data.get('guardianEmail', '') == request.auth.token.email
+            || get(/databases/$(database)/documents/users/$(userId)).data.get('parentEmail', '') == request.auth.token.email);
+      
+      // Allow therapists to update therapy fields for assigned children
+      allow update: if request.auth != null
+        && get(/databases/$(database)/documents/users/$(userId)).data.role == 'kid'
+        && get(/databases/$(database)/documents/users/$(userId)).data.therapistId == request.auth.uid;
+    }
+
+    // ============================================
+    // SESSION NOTES COLLECTION
+    // ============================================
+    match /sessionNotes/{noteId} {
+      // Allow all authenticated users to read (needed for calendar queries)
+      allow read: if request.auth != null;
+      
+      // Allow therapists to create session notes
+      allow create: if request.auth != null
+        && request.resource.data.therapistId == request.auth.uid;
+      
+      // Allow therapists to update their own session notes
+      allow update: if request.auth != null
+        && resource.data.therapistId == request.auth.uid;
+      
+      // Allow therapists to delete their own session notes
+      allow delete: if request.auth != null
+        && resource.data.therapistId == request.auth.uid;
+    }
+
+    // ============================================
+    // THERAPIST COLLECTIONS
+    // ============================================
+    match /therapistNotes/{noteId} {
+      // Therapists can read/write their own notes
+      allow read, write: if request.auth != null 
+        && resource.data.therapistId == request.auth.uid;
+      
+      // Allow creation by authenticated users (therapists)
+      allow create: if request.auth != null;
+    }
+
+    match /sessionReports/{reportId} {
+      // Therapists can read/write their own reports
+      allow read, write: if request.auth != null 
+        && resource.data.therapistId == request.auth.uid;
+      
+      // Allow creation by authenticated users (therapists)
+      allow create: if request.auth != null;
+      
+      // Allow parents to read reports about their children
+      allow read: if request.auth != null
+        && resource.data.get('childGuardianEmail', '') == request.auth.token.email;
+    }
+
+    // ============================================
+    // EMERGENCY ALERTS COLLECTION
+    // ============================================
+    match /emergencyAlerts/{alertId} {
+      // Allow all authenticated users to create alerts
+      allow create: if request.auth != null;
+      
+      // Allow all authenticated users to read alerts
+      allow read: if request.auth != null;
+    }
+
+    // ============================================
+    // CHAT COLLECTIONS
+    // ============================================
+    match /parentTherapistChat/{chatId} {
+      // Allow participants to read/write
+      allow read, write: if request.auth != null 
+        && (resource.data.parentId == request.auth.uid 
+            || resource.data.therapistId == request.auth.uid);
+      
+      // Allow creation by authenticated users
+      allow create: if request.auth != null;
+    }
+
+    match /chatRooms/{chatRoomId} {
+      // Allow authenticated users to read/write chat rooms
+      allow read, write: if request.auth != null;
+      
+      // Messages subcollection
+      match /messages/{messageId} {
+        // Allow authenticated users to read/write messages
+        allow read, write: if request.auth != null;
+      }
+    }
+
+    // ============================================
+    // DENY ALL OTHER ACCESS
+    // ============================================
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+

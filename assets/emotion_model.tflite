@@ -1,0 +1,3 @@
+# This is a placeholder for the TensorFlow Lite emotion detection model
+# In a real implementation, you would train a model on emotion datasets
+# and convert it to TensorFlow Lite format
